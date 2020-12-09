@@ -2,9 +2,9 @@ import os
 import time
 import numpy as np
 import pandas as pd
-from memoized_property import memoized_property
-import mlflow
-from mlflow.tracking import MlflowClient
+#from memoized_property import memoized_property
+#import mlflow
+#from mlflow.tracking import MlflowClient
 from google.cloud import storage
 from sklearn.metrics import accuracy_score
 from tensorflow.keras.applications.vgg16 import VGG16
@@ -18,29 +18,30 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import save_model
 
 BUCKET_NAME = 'art-recognition-app'
-BUCKET_TRAIN_DATA_PATH = '/XXX'
+BUCKET_TRAIN_DATA_PATH = 'Top_12_artists'
 MODEL_NAME = 'VGG16'
 MODEL_VERSION = 'v1'
-MODEL_IT = '1'
 BATCH_SIZE = 32
 IMG_SIZE = (224, 224)
 path0 = r'C:\Users\pitip\code\ClaireLeroux44\ArtRecognition'
 
 class Trainer(object):
-    def __init__(self, n_artist=12, n_embedding=100, data_aug=False, **kwargs):
+    def __init__(self, n_embedding=100, data_aug=False, run_local=False, **kwargs):
         self.n_embedding = n_embedding
-        self.n_artist = n_artist
         self.data_aug = data_aug
+        self.run_local = run_local
 
     def get_datasets(self):
         print("Prepare datasets loading:")
-        # client = storage.Client()
+        if run_local:
+            self.train_dir = os.path.join(path0, 'raw_data', 'test_VGG16', 'Train')
+            self.test_dir = os.path.join(path0, 'raw_data', 'test_VGG16', 'Test')
+        else:
+            client = storage.Client()
 
-        # self.train_dir = f"gs://{BUCKET_NAME}/{BUCKET_TRAIN_DATA_PATH}/Train"
-        # self.test_dir = f"gs://{BUCKET_NAME}/{BUCKET_TRAIN_DATA_PATH}/Test"
+            self.train_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Train"
+            self.test_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Test"
 
-        self.train_dir = os.path.join(path0, 'raw_data', 'test_VGG16', 'Train')
-        self.test_dir = os.path.join(path0, 'raw_data', 'test_VGG16', 'Test')
 
         train_dataset = image_dataset_from_directory(self.train_dir, shuffle=True, batch_size=BATCH_SIZE,\
             image_size=IMG_SIZE, label_mode='categorical')
@@ -54,6 +55,11 @@ class Trainer(object):
         self.train_train_dataset = train_train_dataset.prefetch(buffer_size=AUTOTUNE)
         self.validation_dataset = validation_dataset.prefetch(buffer_size=AUTOTUNE)
         self.test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
+
+        self.n_artist = len(train_dataset.class_names)
+
+        print(f'Number of detected classes: {self.n_artist}')
+        print(f'Number of train/val/test batches: {cardinality(train_train_dataset)}/{cardinality(validation_dataset)}/{cardinality(test_dataset)}')
 
     def get_model(self):
         print("Define model")
@@ -92,26 +98,26 @@ class Trainer(object):
         self.get_model()
 
         print("Fit model")
-        self.model.fit(self.train_train_dataset, epochs=10, validation_data=self.test_dataset, batch_size=32,
+        self.model.fit(self.train_train_dataset, epochs=2, validation_data=self.test_dataset, batch_size=32,
                     callbacks=[EarlyStopping(patience=2, restore_best_weights=True)])
         elapsed = time.time() - tic
         print(f"Elapsed time: {elapsed:.2f} s")
 
-    def save_model(self):
-        """Save the model into a .joblib format"""
+    def save_model(self, model_iter=0):
+        """Save the model"""
 
-        storage_name= f"{MODEL_NAME}_{MODEL_VERSION}_{MODEL_IT}"
+        storage_name= f"models/{MODEL_NAME}_{MODEL_VERSION}_{model_iter}"
 
         save_model(self.model, storage_name, overwrite=True, include_optimizer=True)
         print(f"saved {storage_name} locally")
 
-        # Implement here
-        # storage_location = BUCKET_NAME
-        # storage_client = storage.Client()
-        # bucket = storage_client.get_bucket(storage_location)
-        # blob = bucket.blob(storage_name)
-        # blob.upload_from_filename(storage_name)
-        # print(f"saved {storage_name} on GS")
+        if run_local == False:
+            storage_location = BUCKET_NAME
+            storage_client = storage.Client()
+            bucket = storage_client.get_bucket(storage_location)
+            blob = bucket.blob(storage_name)
+            blob.upload_from_filename(storage_name)
+            print(f"saved {storage_name} on GS")
 
     def evaluate_model(self):
         self.evaluation_loss, self.evaluation_accuracy = self.model.evaluate(self.test_dataset)
@@ -159,16 +165,16 @@ class Trainer(object):
 
 
 if __name__=="__main__":
+    run_local = False
 
-    n_artist=3
     n_embedding=100
     print("Instanciate trainer")
-    trainer = Trainer(n_artist=n_artist, n_embedding=n_embedding, data_aug=False)
+    trainer = Trainer(n_embedding=n_embedding, data_aug=False, run_local=run_local)
     print("Training")
     trainer.model_train()
 
     print("Save model")
-    trainer.save_model()
+    trainer.save_model(model_iter=1)
 
     print("Evaluate model")
     trainer.evaluate_model()

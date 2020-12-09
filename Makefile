@@ -58,3 +58,36 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u lologibus2
+
+##### Google Storage params
+BUCKET_NAME=art-recognition-app
+BUCKET_TRAINING_FOLDER=trainings
+
+##### Machine configuration - - - - - - - - - - - - - - - -
+REGION=europe-west1
+PYTHON_VERSION=3.7
+FRAMEWORK=scikit-learn
+RUNTIME_VERSION=2.2
+
+##### Package params  - - - - - - - - - - - - - - - - - - -
+PACKAGE_NAME=ArtRecognition
+FILENAME=trainer
+
+##### Job - - - - - - - - - - - - - - - - - - - - - - - - -
+JOB_NAME=ArtRecognition_model_training_$(shell date +'%Y%m%d_%H%M%S')
+
+run_locally:
+	@python -m ${PACKAGE_NAME}.${FILENAME}
+
+gcp_submit_training:
+	gcloud ai-platform jobs submit training ${JOB_NAME} \
+		--job-dir gs://${BUCKET_NAME}/${BUCKET_TRAINING_FOLDER} \
+		--package-path ${PACKAGE_NAME} \
+		--module-name ${PACKAGE_NAME}.${FILENAME} \
+		--python-version=${PYTHON_VERSION} \
+		--runtime-version=${RUNTIME_VERSION} \
+		--region ${REGION} \
+		--stream-logs
+
+run_api:
+	uvicorn api.fast:app --reload  # load web server with code autoreload
