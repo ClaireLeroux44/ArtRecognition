@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img
 from PIL import Image
-from trainer import BUCKET_NAME, BUCKET_TRAIN_DATA_PATH
+from trainer import BUCKET_NAME, BUCKET_DATA_PATH
 
 
 def download_model(model_name, bucket=BUCKET_NAME, run_local=True):

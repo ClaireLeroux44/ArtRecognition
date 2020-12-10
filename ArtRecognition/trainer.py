@@ -18,7 +18,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import save_model
 
 BUCKET_NAME = 'art-recognition-app'
-BUCKET_TRAIN_DATA_PATH = 'Top_12_artists'
+BUCKET_DATA_PATH = 'Top_12_artists'
 MODEL_NAME = 'VGG16'
 MODEL_VERSION = 'v1'
 BATCH_SIZE = 32
@@ -39,8 +39,13 @@ class Trainer(object):
         else:
             client = storage.Client()
 
-            self.train_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Train"
-            self.test_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Test"
+            artists_df = pd.read_csv("gs://art-recognition-app/artists_numbers.csv")
+            print(artists_df.shape)
+
+            # self.train_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Train"
+            # self.test_dir = f"gs://{BUCKET_NAME}/{BUCKET_DATA_PATH}/Test"
+            self.train_dir = "gs://art-recognition-app/Top_12_artists/Train"
+            self.test_dir = "gs://art-recognition-app/Top_12_artists/Test"
 
 
         train_dataset = image_dataset_from_directory(self.train_dir, shuffle=True, batch_size=BATCH_SIZE,\
@@ -144,7 +149,7 @@ class Trainer(object):
         print('Test accuracy :', self.evaluation_accuracy)
 
 if __name__=="__main__":
-    run_local = True
+    run_local = False
     log_file = True
     n_embedding=100
     print("Instanciate trainer")
