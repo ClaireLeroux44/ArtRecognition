@@ -23,7 +23,7 @@ MODEL_NAME = 'VGG16'
 MODEL_VERSION = 'v1'
 BATCH_SIZE = 32
 IMG_SIZE = (224, 224)
-path0 = r'C:\Users\pitip\code\ClaireLeroux44\ArtRecognition'
+path0 = r'C:\Users\pitip\OneDrive\Bureau'
 
 class Trainer(object):
     def __init__(self, n_embedding=100, data_aug=False, run_local=False, **kwargs):
@@ -98,75 +98,54 @@ class Trainer(object):
         self.get_model()
 
         print("Fit model")
-        self.model.fit(self.train_train_dataset, epochs=2, validation_data=self.test_dataset, batch_size=32,
+        self.history = self.model.fit(self.train_train_dataset, epochs=2, validation_data=self.test_dataset, batch_size=32,
                     callbacks=[EarlyStopping(patience=2, restore_best_weights=True)])
         elapsed = time.time() - tic
         print(f"Elapsed time: {elapsed:.2f} s")
 
     def save_model(self, model_iter=0):
         """Save the model"""
+        self.timestr = time.strftime("%Y%m%d_%H%M%S")
+        self.storage_name= f"models/{self.timestr}_{MODEL_NAME}_{MODEL_VERSION}_{model_iter}"
 
-        storage_name= f"models/{MODEL_NAME}_{MODEL_VERSION}_{model_iter}"
-
-        save_model(self.model, storage_name, overwrite=True, include_optimizer=True)
-        print(f"saved {storage_name} locally")
+        save_model(self.model, self.storage_name, overwrite=True, include_optimizer=True)
+        print(f"saved {self.storage_name} locally")
 
         if run_local == False:
             storage_location = BUCKET_NAME
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(storage_location)
-            blob = bucket.blob(storage_name)
-            blob.upload_from_filename(storage_name)
-            print(f"saved {storage_name} on GS")
+            blob = bucket.blob(self.storage_name)
+            blob.upload_from_filename(self.storage_name)
+            print(f"saved {self.storage_name} on GS")
+
+    def write_log_file(self, log_file=True):
+        if log_file:
+            self.log_name= self.storage_name+'.txt'
+            self.csv_name= self.storage_name+'.csv'
+
+            with open(self.log_name, 'w') as file:
+                file.write(f"Date: {self.timestr}\n")
+                file.write(f"Artist number: {self.n_artist}\n")
+                file.write(f"Embedding size: {self.n_embedding}\n")
+                file.write(f"With data augmentation: {self.data_aug}\n")
+                file.write(f'Number of train batches: {cardinality(self.train_train_dataset)}\n')
+                file.write(f'Number of validation batches: {cardinality(self.validation_dataset)}\n')
+                file.write(f'Number of test batches: {cardinality(self.test_dataset)}\n')
+                file.write(f"Loss on test set: {self.evaluation_loss:.4f}\n")
+                file.write(f"Accuracy on test set: {self.evaluation_accuracy:.4f}\n")
+
+            history_df = pd.DataFrame(self.history.history)
+
+            history_df.to_csv(self.csv_name, index=False)
 
     def evaluate_model(self):
         self.evaluation_loss, self.evaluation_accuracy = self.model.evaluate(self.test_dataset)
         print('Test accuracy :', self.evaluation_accuracy)
 
-    # @memoized_property
-    # def mlflow_client(self):
-    #     mlflow.set_tracking_uri(MLFLOW_URI)
-    #     return MlflowClient()
-
-    # @memoized_property
-    # def mlflow_experiment_id(self):
-    #     try:
-    #         return self.mlflow_client.create_experiment(self.experiment_name)
-    #     except BaseException:
-    #         return self.mlflow_client.get_experiment_by_name(self.experiment_name).experiment_id
-
-    # @memoized_property
-    # def mlflow_run(self):
-    #     return self.mlflow_client.create_run(self.mlflow_experiment_id)
-
-    # def mlflow_log_param(self, key, value):
-    #     self.mlflow_client.log_param(self.mlflow_run.info.run_id, key, value)
-
-    # def mlflow_log_metric(self, key, value):
-    #     self.mlflow_client.log_metric(self.mlflow_run.info.run_id, key, value)
-
-    # def log_estimator_params(self):
-    #     reg = self.get_estimator()
-    #     self.mlflow_log_param('estimator_name', reg.__class__.__name__)
-    #     params = reg.get_params()
-    #     for k, v in params.items():
-    #         self.mlflow_log_param(k, v)
-
-    # def log_kwargs_params(self):
-    #     if self.mlflow:
-    #         for k, v in self.kwargs.items():
-    #             self.mlflow_log_param(k, v)
-
-    # def log_machine_specs(self):
-    #     cpus = multiprocessing.cpu_count()
-    #     mem = virtual_memory()
-    #     ram = int(mem.total / 1000000000)
-    #     self.mlflow_log_param("ram", ram)
-
-
 if __name__=="__main__":
-    run_local = False
-
+    run_local = True
+    log_file = True
     n_embedding=100
     print("Instanciate trainer")
     trainer = Trainer(n_embedding=n_embedding, data_aug=False, run_local=run_local)
@@ -178,3 +157,6 @@ if __name__=="__main__":
 
     print("Evaluate model")
     trainer.evaluate_model()
+
+    print("Write log file")
+    trainer.write_log_file(log_file = log_file)
