@@ -59,6 +59,9 @@ pypi_test:
 pypi:
 	@twine upload dist/* -u lologibus2
 
+run_api:
+	@uvicorn api.fast:app --host "0.0.0.0" --port 8000 --reload
+
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
 BUCKET_TRAINING_FOLDER=trainings
@@ -88,7 +91,4 @@ gcp_submit_training:
 		--runtime-version=${RUNTIME_VERSION} \
 		--region ${REGION} \
 		--stream-logs \
-		--scale-tier=basic-gpuv
-
-run_api:
-	@uvicorn api.fast:app --host '0.0.0.0' --port 8000 --reload
+		--scale-tier=basic-gpu

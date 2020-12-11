@@ -60,4 +60,3 @@ if uploaded_file is not None:
     # ----------------------------------------------------------
     if os.path.exists(temp_image):
         os.remove(temp_image)
-
