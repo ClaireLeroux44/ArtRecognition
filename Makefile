@@ -58,3 +58,6 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u lologibus2
+
+run_api:
+	@uvicorn api.fast:app --host "0.0.0.0" --port 8000 --reload

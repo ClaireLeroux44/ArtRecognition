@@ -2,6 +2,9 @@ import streamlit as st
 import numpy as numpy
 import pandas as pd
 import requests
+from PIL import Image
+import os
+import time
 
 
 '''
@@ -10,19 +13,50 @@ import requests
 
 uploaded_file = st.file_uploader("Choose a file")
 if uploaded_file is not None:
-    # To read file as bytes:
-    bytes_data = uploaded_file.read()
-    st.write(bytes_data)file.read()
+    # ----------------------------------------------------------
+    # Extract file
+    # ----------------------------------------------------------
+
+    file_details = {
+            "FileName":uploaded_file.name,
+            "FileType":uploaded_file.type,
+            "FileSize":uploaded_file.size}
+    st.write(file_details)
+
+    image = Image.open(uploaded_file)
+    extension = uploaded_file.name.split(".")[-1:][0]
+    print(extension)
 
 
-multipart_form_data = {
-            "inputImage" : (open(bytes_data, "rb"))
-            }
+    st.image(image)
 
-url = "http://localhost:8080/predict"
 
-response = requests.post(url, files=multipart_form_data)
-st.write(response.json())
-#response = requests.get("http://taxifare.lewagon.ai/predict_fare/")
+    # ----------------------------------------------------------
+    # Temp file
+    # ----------------------------------------------------------
 
-#st.markdown(f"<h1 style=‘color:#6369D1;text-align: center;’>{str(round(response.json()['prediction'],2))}</h1>", unsafe_allow_html=True)
+    temp_image = str(int(time.time())) + "_" + uploaded_file.name
+    print(temp_image)
+    image.save(temp_image)
+
+
+
+    # ----------------------------------------------------------
+    # Request
+    # ----------------------------------------------------------
+    multipart_form_data = {
+        "inputImage" : (open(temp_image, "rb"))
+    }
+
+    url = "http://localhost:8000/predict"
+
+    response = requests.post(url, files=multipart_form_data)
+    print(response)
+    print(response.json())
+    st.write(response.json())
+
+    # ----------------------------------------------------------
+    # Delete temp file
+    # ----------------------------------------------------------
+    if os.path.exists(temp_image):
+        os.remove(temp_image)
