@@ -38,13 +38,13 @@ uninstal:
 
 count_lines:
 	@find ./ -name '*.py' -exec  wc -l {} \; | sort -n| awk \
-        '{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
+	'{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
 	@echo ''
 	@find ./scripts -name '*-*' -exec  wc -l {} \; | sort -n| awk \
 		        '{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
 	@echo ''
 	@find ./tests -name '*.py' -exec  wc -l {} \; | sort -n| awk \
-        '{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
+	'{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
 	@echo ''
 
 # ----------------------------------
@@ -58,7 +58,10 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u lologibus2
-  
+
+run_api:
+	@uvicorn api.fast:app --host "0.0.0.0" --port 8000 --reload
+
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
 BUCKET_TRAINING_FOLDER=trainings
@@ -89,7 +92,3 @@ gcp_submit_training:
 		--region ${REGION} \
 		--stream-logs \
 		--scale-tier=basic-gpu
-
-run_api:
-	uvicorn api.fast:app --reload  # load web server with code autoreload
-

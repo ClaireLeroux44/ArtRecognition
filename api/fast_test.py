@@ -6,14 +6,11 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 import os
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img
 
 
 app = FastAPI()
 
-
-cache_models = {}
+models = {}
 
 def check_extension(filename):
     ALLOWED_EXTENSION = ["jpg", "jpeg", "png"]
@@ -34,11 +31,10 @@ def read_imagefile(file) -> Image.Image:
 
 @app.on_event("startup")
 async def startup_event():
-    print("loading model ...")
-    dirname = os.path.dirname(os.path.dirname(__file__))
-    model_path = os.path.join(dirname,'models','Model_v0_art12_emb100_withDA')
-    model = load_model(model_path)
-    cache_models["model_1"] = model
+    print("loading model")
+    model = "my_model"
+    models["model_1"] = model
+    
 
 @app.post("/predict")
 async def predict_handler(response : Response, inputImage : UploadFile = File(...)):
@@ -47,7 +43,6 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     Check extension
     '''
     check = check_extension(inputImage.filename)
-    print(check)
     if check == False :
         response_payload = {
                 "status" : "error",
@@ -64,9 +59,10 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     img = read_imagefile(inputImage.file)
 
     #prediction
-    model = cache_models["model_1"]
-    pred = model.predict(img)
-    artiste_index = np.argmax(pred[0])
+    dirname = os.path.dirname(os.path.dirname(__file__))
+    print(models["model_1"])
+
+    artiste_index = 12
 
     response_payload = {"prediction" : str(artiste_index)}
 

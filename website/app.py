@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as numpy
 import pandas as pd
 import requests
-from PIL import Image 
+from PIL import Image
 import os
 import time
 
@@ -25,6 +25,7 @@ if uploaded_file is not None:
 
     image = Image.open(uploaded_file)
     extension = uploaded_file.name.split(".")[-1:][0]
+    print(extension)
 
 
     st.image(image)
@@ -35,7 +36,8 @@ if uploaded_file is not None:
     # ----------------------------------------------------------
 
     temp_image = str(int(time.time())) + "_" + uploaded_file.name
-    image.save(temp_image, extension)
+    print(temp_image)
+    image.save(temp_image)
 
 
 
@@ -46,7 +48,7 @@ if uploaded_file is not None:
         "inputImage" : (open(temp_image, "rb"))
     }
 
-    url = "http://localhost:8080/predict"
+    url = "http://localhost:8000/predict"
 
     response = requests.post(url, files=multipart_form_data)
     print(response)
@@ -58,4 +60,3 @@ if uploaded_file is not None:
     # ----------------------------------------------------------
     if os.path.exists(temp_image):
         os.remove(temp_image)
-
