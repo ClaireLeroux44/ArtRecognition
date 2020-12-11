@@ -56,7 +56,7 @@ def copy_gcs_to_local_directory():
 def copy_local_directory_to_gcs(local_path, gcs_path):
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
-    for local_file in glob.glob(local_path + '/**'):
+    for local_file in glob.glob(local_path + '/**', recursive=True):
         if not os.path.isfile(local_file):
             continue
         remote_path = os.path.join(gcs_path, local_file[1 + len(local_path) :])
