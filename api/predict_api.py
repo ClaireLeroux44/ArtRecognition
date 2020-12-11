@@ -4,7 +4,7 @@ import sys
 import ipdb
 def predict_request(image_path):
 
-    url = "http://localhost:8080/predict"
+    url = "http://localhost:8000/predict"
 
     multipart_form_data = {
             "inputImage" : (open(image_path, "rb"))

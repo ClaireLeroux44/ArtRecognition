@@ -36,6 +36,7 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     Check extension
     '''
     check = check_extension(inputImage.filename)
+    print(check)
     if check == False :
         response_payload = {
                 "status" : "error",
@@ -58,7 +59,6 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
     pred = model.predict(img)
     artiste_index = np.argmax(pred[0])
-    print(artiste_index)
 
     response_payload = {"prediction" : str(artiste_index)}
 
