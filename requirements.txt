@@ -9,3 +9,7 @@ black
 yapf
 python-gitlab
 twine
+numpy
+google.cloud
+scikit-learn
+tf-nightly

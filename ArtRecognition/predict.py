@@ -6,21 +6,20 @@ from sklearn.metrics import accuracy_score
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img
 from PIL import Image
-
-BUCKET_NAME = 'art-recognition-app'
-BUCKET_TRAIN_DATA_PATH = '/XXX'
+from trainer import BUCKET_NAME, BUCKET_DATA_PATH
 
 
-def download_model(model_name, bucket=BUCKET_NAME):
-    # storage_client = storage.Client()
-    # bucket = storage_client.get_bucket(BUCKET_NAME)
-    # blob = bucket.blob(model_name)
+def download_model(model_name, bucket=BUCKET_NAME, run_local=True):
+    if run_local==False:
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(BUCKET_NAME)
+        blob = bucket.blob(f"models/{model_name}")
 
-    # print(storage_location)
-    # blob = client.blob(storage_location)
-    # blob.download_to_filename(model_name)
-    # print("=> model downloaded from storage")
-    model = load_model(model_name, custom_objects=None, compile=False)
+        print(storage_location)
+        blob = client.blob(storage_location)
+        blob.download_to_filename(model_name)
+        print("=> model downloaded from storage")
+    model = load_model(f"models/{model_name}", custom_objects=None, compile=False)
 
     print("=> model loaded")
     return model
@@ -33,8 +32,8 @@ def artist_prediction(model, image):
 
 
 if __name__ == '__main__':
-    model_name = r'C:\Users\pitip\code\ClaireLeroux44\ArtRecognition\ArtRecognition\VGG16_v1_1'
-    model = download_model(model_name)
+    model_name = r'VGG16_v1_1'
+    model = download_model(model_name, run_local=True)
 
     image_to_predict =r'C:\Users\pitip\code\ClaireLeroux44\ArtRecognition\raw_data\test_VGG16\Test\class_3\118.jpg'
 
