@@ -58,7 +58,7 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u lologibus2
-
+  
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
 BUCKET_TRAINING_FOLDER=trainings
@@ -92,3 +92,4 @@ gcp_submit_training:
 
 run_api:
 	uvicorn api.fast:app --reload  # load web server with code autoreload
+
