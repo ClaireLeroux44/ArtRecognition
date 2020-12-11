@@ -87,7 +87,8 @@ gcp_submit_training:
 		--python-version=${PYTHON_VERSION} \
 		--runtime-version=${RUNTIME_VERSION} \
 		--region ${REGION} \
-		--stream-logs
+		--stream-logs \
+		--scale-tier=basic-gpu
 
 run_api:
 	uvicorn api.fast:app --reload  # load web server with code autoreload
