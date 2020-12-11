@@ -219,7 +219,7 @@ if __name__=="__main__":
     list_emb = [50, 100, 200, 400]
     list_DA = [False, True]
     list_activ = ['relu', 'tanh', 'sigmoid', 'linear']
-    list_patience = [20]
+    list_patience = [50]
     model_iter = 0
     for patience in list_patience:
         for emb in list_emb:
