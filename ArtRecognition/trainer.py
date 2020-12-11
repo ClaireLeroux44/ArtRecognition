@@ -26,7 +26,7 @@ BUCKET_DATA_PATH = 'Clean_data/Top_12'
 local_dir = '/data/'
 
 MODEL_NAME = 'VGG16'
-MODEL_VERSION = 'v1'
+MODEL_VERSION = 'v2'
 
 BATCH_SIZE = 32
 IMG_SIZE = (224, 224)
