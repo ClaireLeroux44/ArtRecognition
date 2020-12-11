@@ -239,7 +239,7 @@ if __name__=="__main__":
 
     print(f"Number of experiments: {len(list_exp)}")
 
-    for ii, exp in enumerate(list_exp[:1]):
+    for ii, exp in enumerate(list_exp):
         print(f"Experiments {ii+1}/{len(list_exp)}")
         print(exp)
         print("Instanciate trainer")
