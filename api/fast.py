@@ -36,7 +36,7 @@ def read_imagefile(file) -> Image.Image:
 async def startup_event():
     print("loading model ...")
     dirname = os.path.dirname(os.path.dirname(__file__))
-    model_path = os.path.join(dirname,'models','Model_v0_art12_emb100_withDA')
+    model_path = os.path.join(dirname,'models','20201210_170338_VGG16_v2_0')
     model = load_model(model_path)
     cache_models["model_1"] = model
 
