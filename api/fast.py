@@ -16,7 +16,6 @@ import time
 import shutil
 import joblib
 
-
 app = FastAPI()
 
 
@@ -41,6 +40,7 @@ def path_to_image(path, image_size, num_channels, interpolation):
     return img
 
 def read_imagefile(file) -> Image.Image :
+
     img_test = path_to_image(file, (224, 224), 3, 'bilinear')
     img_test = np.array(img_test)
     img_test = np.expand_dims(img_test, axis = 0)
@@ -79,6 +79,24 @@ def extract_picture(pred_label,metadb):
     return pics_list[0]
 
 
+def extract_artist(artiste_index, metadb):
+    dico_artistes = {0: '_1',
+    1: '_10',
+    2: '_11',
+    3: '_12',
+    4: '_2',
+    5: '_3',
+    6: '_4',
+    7: '_5',
+    8: '_6',
+    9: '_7',
+    10: '_8',
+    11: '_9'}
+
+    data_artist =metadb[metadb.loc[:,'artist_number'] == dico_artistes[artiste_index]]
+    artist_name = list(data_artist['artist'])[0]
+    return artist_name
+
 # def read_imagefile(file) -> Image.Image:
 # img = Image.open(file)
 # img = img.resize((224,224),resample=Image.BILINEAR)
@@ -111,6 +129,13 @@ async def startup_event():
     cache_metadata["metadata"] = data
 
 
+    print("loading metadata database ... ")
+    dirname = os.path.dirname(os.path.dirname(__file__))
+    db_path = os.path.join(dirname,'ArtRecognition','data','database.csv')
+    data = pd.read_csv(db_path)
+    cache_metadata["metadata"] = data
+
+
 @app.post("/predict")
 async def predict_handler(response : Response, inputImage : UploadFile = File(...)):
 
@@ -118,7 +143,6 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     Check extension
     '''
     check = check_extension(inputImage.filename)
-    print(check)
     if check == False :
         response_payload = {
                 "status" : "error",
@@ -173,4 +197,9 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     if os.path.exists(temp_image):
         os.remove(temp_image)
 
+    '''
+    Delete temp image
+    '''
+    if os.path.exists(temp_image):
+        os.remove(temp_image)
     return response_payload
