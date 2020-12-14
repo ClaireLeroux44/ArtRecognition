@@ -21,14 +21,14 @@ if uploaded_file is not None:
             "FileName":uploaded_file.name,
             "FileType":uploaded_file.type,
             "FileSize":uploaded_file.size}
-    st.write(file_details)
+    #st.write(file_details)
 
     image = Image.open(uploaded_file)
     extension = uploaded_file.name.split(".")[-1:][0]
     print(extension)
 
 
-    st.image(image)
+    st.image(image,width=224)
 
 
     # ----------------------------------------------------------
@@ -52,8 +52,8 @@ if uploaded_file is not None:
 
     response = requests.post(url, files=multipart_form_data)
     print(response)
-    print(response.json())
-    st.write(response.json())
+    if response.json() is not None:
+        st.write(response.json())
 
     # ----------------------------------------------------------
     # Delete temp file

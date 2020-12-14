@@ -3,6 +3,8 @@
 from fastapi import FastAPI, File, UploadFile, Response
 import json
 import numpy as np
+from tensorflow.python.ops import image_ops
+from tensorflow.python.ops import io_ops
 from PIL import Image
 from io import BytesIO
 import os
@@ -21,20 +23,41 @@ def check_extension(filename):
     else :
         return True
 
+def path_to_image(input_img, image_size, num_channels, interpolation):
+# img = io_ops.read_file(path)
+    img = image_ops.decode_image(input_img, channels=num_channels, expand_animations=False)
+    img = image_ops.resize_images_v2(img, image_size, method=interpolation)
+    img.set_shape((image_size[0], image_size[1], num_channels))
+    return img
+
+# def read_imagefile(file) -> Image.Image:
+# img = Image.open(BytesIO(file))
+# img = Image.open(file)
+# print(type(img))
+# img_test = path_to_image(img, (224, 224), 3, 'bilinear')
+# img_test = np.array(img_test)
+# img_test = np.expand_dims(img_test, axis = 0)
+# return img_test
+
+# rgbimg.save('foo.jpg')
+
 def read_imagefile(file) -> Image.Image:
-    #img = Image.open(BytesIO(file))
     img = Image.open(file)
     img = img.resize((224,224),resample=Image.BILINEAR)
-    img = np.array(img)
-    img = np.expand_dims(img, axis = 0)
-    return img
+
+    rgbimg = Image.new("RGBA", img.size)
+    rgbimg.paste(img)
+
+    rgbimg = np.array(rgbimg)
+    rgbimg = np.expand_dims(rgbimg, axis = 0)
+    return rgbimg
 
 @app.on_event("startup")
 async def startup_event():
     print("loading model")
     model = "my_model"
     models["model_1"] = model
-    
+
 
 @app.post("/predict")
 async def predict_handler(response : Response, inputImage : UploadFile = File(...)):
@@ -51,19 +74,21 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
         response.status_code=400
         return response
 
+    print(check)
     '''
     Prediction worker
     '''
     # Extraction image
-    #img = read_imagefile( await inputImage.read())
+        #img = read_imagefile( await inputImage.read())
     img = read_imagefile(inputImage.file)
 
+
     #prediction
-    dirname = os.path.dirname(os.path.dirname(__file__))
-    print(models["model_1"])
+# dirname = os.path.dirname(os.path.dirname(__file__))
+# print(models["model_1"])
 
     artiste_index = 12
 
     response_payload = {"prediction" : str(artiste_index)}
 
-    return response_payload
+    return response_payload["prediction"]
