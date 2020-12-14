@@ -94,7 +94,6 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     Check extension
     '''
     check = check_extension(inputImage.filename)
-    print(check)
     if check == False :
         response_payload = {
                 "status" : "error",
