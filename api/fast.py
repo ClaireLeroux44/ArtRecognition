@@ -129,13 +129,6 @@ async def startup_event():
     cache_metadata["metadata"] = data
 
 
-    print("loading metadata database ... ")
-    dirname = os.path.dirname(os.path.dirname(__file__))
-    db_path = os.path.join(dirname,'ArtRecognition','data','database.csv')
-    data = pd.read_csv(db_path)
-    cache_metadata["metadata"] = data
-
-
 @app.post("/predict")
 async def predict_handler(response : Response, inputImage : UploadFile = File(...)):
 
