@@ -24,13 +24,19 @@ def check_extension(filename):
     else :
         return True
 
+def path_to_image(path, image_size, num_channels, interpolation):
+    img = io_ops.read_file(path)
+    img = image_ops.decode_image(img, channels=num_channels, expand_animations=False)
+    img = image_ops.resize_images_v2(img, image_size, method=interpolation)
+    img.set_shape((image_size[0], image_size[1], num_channels))
+    return img
+
 def read_imagefile(file) -> Image.Image:
     #img = Image.open(BytesIO(file))
-    img = Image.open(file)
-    img = img.resize((224,224),resample=Image.BILINEAR)
-    img = np.array(img)
-    img = np.expand_dims(img, axis = 0)
-    return img
+    img_test = path_to_image(file, (224, 224), 3, 'bilinear')
+    img_test = np.array(img_test)
+    img_test = np.expand_dims(img_test, axis = 0)
+    return img_test
 
 @app.on_event("startup")
 async def startup_event():
