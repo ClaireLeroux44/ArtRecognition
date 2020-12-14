@@ -26,7 +26,7 @@ BUCKET_DATA_PATH = 'Clean_data/Top_12'
 local_dir = '/data/'
 
 MODEL_NAME = 'VGG16'
-MODEL_VERSION = 'v1'
+MODEL_VERSION = 'v4'
 
 BATCH_SIZE = 32
 IMG_SIZE = (224, 224)
@@ -56,7 +56,7 @@ def copy_gcs_to_local_directory():
 def copy_local_directory_to_gcs(local_path, gcs_path):
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
-    for local_file in glob.glob(local_path + '/**'):
+    for local_file in glob.glob(local_path + '/**', recursive=True):
         if not os.path.isfile(local_file):
             continue
         remote_path = os.path.join(gcs_path, local_file[1 + len(local_path) :])
@@ -219,7 +219,7 @@ if __name__=="__main__":
     list_emb = [50, 100, 200, 400]
     list_DA = [False, True]
     list_activ = ['relu', 'tanh', 'sigmoid', 'linear']
-    list_patience = [20, 50]
+    list_patience = [50]
     model_iter = 0
     for patience in list_patience:
         for emb in list_emb:
@@ -239,7 +239,7 @@ if __name__=="__main__":
 
     print(f"Number of experiments: {len(list_exp)}")
 
-    for ii, exp in enumerate(list_exp[:1]):
+    for ii, exp in enumerate(list_exp):
         print(f"Experiments {ii+1}/{len(list_exp)}")
         print(exp)
         print("Instanciate trainer")
