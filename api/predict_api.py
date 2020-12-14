@@ -1,10 +1,11 @@
 #marie: test api
 import requests
 import sys
-import ipdb
+# import ipdb
 def predict_request(image_path):
 
-    url = "http://localhost:8000/predict"
+# url = "http://localhost:8000/predict"
+    url = "http://localhost:8080/predict"
 
     multipart_form_data = {
             "inputImage" : (open(image_path, "rb"))
@@ -17,5 +18,5 @@ def predict_request(image_path):
 
 
 if __name__=="__main__":
-    #predict_request(sys.argv[1])
-    predict_request('/Users/marie.dausse/code/mariedos/clairel/ArtRecognition/raw_data/train_dir/Top_12/_7/313.jpg')
+    predict_request(sys.argv[1])
+# predict_request('/Users/marie.dausse/code/mariedos/clairel/ArtRecognition/raw_data/train_dir/Top_12/_7/313.jpg')
