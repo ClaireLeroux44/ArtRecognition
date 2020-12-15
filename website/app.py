@@ -7,6 +7,31 @@ import os
 import time
 import urllib.request, io
 
+from django.template.defaultfilters import slugify
+root_path = os.path.dirname(os.getcwd())
+link = os.path.join(root_path,'ArtRecognition', 'data','all_data_info.csv')
+link2 = os.path.join(root_path,'ArtRecognition', 'data','database.csv')
+
+def get_gcp_image_url(filename, directory):
+    url = f"https://storage.googleapis.com/art-recognition-database/{directory}/{filename}"
+    return url
+
+def get_df(link):
+    return pd.read_csv(link)
+
+def get_repository_from_image(filename):
+
+    df = get_df(link2)
+    df = df.query(f"new_filename == '{filename}' ")
+
+    #classes = cdf.to_dict('records')
+    #df = df.to_dict('records')
+
+    #directory = df['artist_number']
+    return df.to_dict('records')
+
+
+
 
 st.markdown("<h1 style='text-align: center; color: navy;'>Art Recognition Website</h1>", unsafe_allow_html=True)
 
@@ -64,7 +89,16 @@ if uploaded_file is not None:
         filename = response.json()["picture_number"]
 
 
-        URL = f"https://storage.googleapis.com/art-recognition-database/{repo}/{filename}"
+        #st.markdown(filename)
+        df = get_repository_from_image(filename)
+        directory = df[0]['artist_number']
+
+
+        src = get_gcp_image_url(filename, directory)
+
+
+        #URL = f"https://storage.googleapis.com/art-recognition-database/{repo}/{filename}"
+        URL = src
 
         temp_pred = str(int(time.time())) + "_" + "pred.jpg"
 
