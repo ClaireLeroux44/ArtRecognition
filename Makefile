@@ -62,6 +62,9 @@ pypi:
 run_api:
 	@uvicorn api.fast:app --host "0.0.0.0" --port 8000 --reload
 
+run_api_test:
+	@uvicorn api.fast_test:app --host "0.0.0.0" --port 8000 --reload
+
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
 BUCKET_TRAINING_FOLDER=trainings
