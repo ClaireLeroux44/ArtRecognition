@@ -5,7 +5,7 @@ import requests
 from PIL import Image
 import os
 import time
-
+import urllib.request, io
 
 
 st.markdown("<h1 style='text-align: center; color: navy;'>Art Recognition Website</h1>", unsafe_allow_html=True)
@@ -25,8 +25,7 @@ if uploaded_file is not None:
 
     image = Image.open(uploaded_file)
     extension = uploaded_file.name.split(".")[-1:][0]
-    print(extension)
-    #st.image(image,width=224)
+    st.image(image,width=224)
 
 
 
@@ -37,19 +36,7 @@ if uploaded_file is not None:
     # ----------------------------------------------------------
 
     temp_image = str(int(time.time())) + "_" + uploaded_file.name
-    print(temp_image)
     image.save(temp_image)
-
-# def get_gcp_image_url(filename, directory):
-    # url = f"https://storage.googleapis.com/art-recognition-database/{directory}/{filename}"
-    # return url
-# def print_image_HTML_from_JSON(json_response):
-    # directory = json_response["artist_index"]
-    # filename = json_response["picture_number"]
-    # title = json_response["picture_name"]
-    # src = get_gcp_image_url(filename, directory)
-    # html = f"<img src=‘{src}’ title=‘{title}’ />"
-    # return html
 
     # ----------------------------------------------------------
     # Request
@@ -61,20 +48,62 @@ if uploaded_file is not None:
     url = "http://localhost:8000/predict"
 
     response = requests.post(url, files=multipart_form_data)
-    print(response)
-    #if response.json() is not None:
-    st.markdown(response.json()["artist_prediction"])
-    st.markdown((response.json()["picture_name"]))
-    urllib.urlopen(f"https://storage.googleapis.com/art-recognition-database/{response.json()["artist_index"]}/{response.json()["artist_index"]}")
-    #st.image()
-        #st.write(print_image_HTML_from_JSON(response.json()))
+    response_code = response.status_code
 
-    # ----------------------------------------------------------
-    # Return Image
-    # ----------------------------------------------------------
+    if response_code == 200 :
 
-    # ----------------------------------------------------------
-    # Delete temp file
-    # ----------------------------------------------------------
-    if os.path.exists(temp_image):
-        os.remove(temp_image)
+        print(response)
+        #if response.json() is not None:
+
+        st.markdown(response.json()["artist_prediction"])
+        st.markdown(response.json()["picture_name"])
+        st.markdown(response.json()["picture_number"])
+        st.markdown(response.json()["artist_index"])
+
+        repo= response.json()["artist_index"]
+        filename = response.json()["picture_number"]
+
+
+        URL = f"https://storage.googleapis.com/art-recognition-database/{repo}/{filename}"
+
+        temp_pred = str(int(time.time())) + "_" + "pred.jpg"
+
+        try :
+
+            with urllib.request.urlopen(URL) as url:
+               with open(temp_pred, 'wb') as f:
+                   f.write(url.read())
+
+            img_pred = Image.open(temp_pred)
+            st.image(img_pred,width=224)
+
+
+            #
+
+            #st.image()
+                #st.write(print_image_HTML_from_JSON(response.json()))
+
+            # ----------------------------------------------------------
+            # Return Image
+            # ----------------------------------------------------------
+
+            # ----------------------------------------------------------
+            # Delete temp file
+            # ----------------------------------------------------------
+
+            if os.path.exists(temp_image):
+                os.remove(temp_image)
+            if os.path.exists(temp_pred):
+                os.remove(temp_pred)
+        except :
+            print('prediction ne marche pas')
+            if os.path.exists(temp_image):
+                os.remove(temp_image)
+            if os.path.exists(temp_pred):
+                os.remove(temp_pred)
+
+    else :
+        print("prediction ne marche pas")
+        if os.path.exists(temp_image):
+            os.remove(temp_image)
+
