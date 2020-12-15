@@ -69,7 +69,7 @@ def extract_artist(artiste_index, metadb):
 
     data_artist =metadb[metadb.loc[:,'artist_number'] == dico_artistes[artiste_index]]
     artist_name = list(data_artist['artist'])[0]
-    return artist_name
+    return dico_artistes[artiste_index], artist_name
 
 def extract_picture(pred_label,metadb):
     pics_list = []
@@ -78,24 +78,13 @@ def extract_picture(pred_label,metadb):
         pics_list.append(list(df['pics'])[0])
     return pics_list[0]
 
+def extract_title(pred_label,metadb):
+    names_list = []
+    for i in pred_label[0]:
+        df = metadb[metadb['labels'] == i]
+        names_list.append(list(df['title'])[0])
+    return names_list[0]
 
-def extract_artist(artiste_index, metadb):
-    dico_artistes = {0: '_1',
-    1: '_10',
-    2: '_11',
-    3: '_12',
-    4: '_2',
-    5: '_3',
-    6: '_4',
-    7: '_5',
-    8: '_6',
-    9: '_7',
-    10: '_8',
-    11: '_9'}
-
-    data_artist =metadb[metadb.loc[:,'artist_number'] == dico_artistes[artiste_index]]
-    artist_name = list(data_artist['artist'])[0]
-    return artist_name
 
 # def read_imagefile(file) -> Image.Image:
 # img = Image.open(file)
@@ -164,7 +153,7 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     pred = model_artist.predict(img)
     artiste_index = np.argmax(pred[0])
 
-    artist_name = extract_artist(artiste_index, cache_metadata["metadata"])
+    artist_index, artist_name = extract_artist(artiste_index, cache_metadata["metadata"])
 
     #prediction toile
     img_knn = read_image_knn(temp_image)
@@ -180,9 +169,11 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
     picture = extract_picture(pred_label,cache_metadata["metadata"])
 
+    name = extract_title(pred_label,cache_metadata["metadata"])
 
 
-    response_payload = {"artist_prediction" : artist_name,"picture_name":picture}
+
+    response_payload = {"artist_index":artist_index, "artist_prediction" : artist_name,"picture_number":picture,'picture_name':name}
     #response_payload = {"prediction" : picture}
     '''
     Delete temp image
