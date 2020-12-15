@@ -59,15 +59,19 @@ run_api:
 run_api_test:
 	@uvicorn api.fast_test:app --host "0.0.0.0" --port 8000 --reload
 
-#### BUILD AND DEPLOY 
+#### BUILD AND DEPLOY
 PROJECT_ID=artrecognition
-build_api : 
-	@docker build -t eu.gcr.io/$(PROJECT_ID)/artrecognition-api -f Dockerfile_API . 
-	@gcloud docker -- push eu.gcr.io/$(PROJECT_ID)/artrecognition-api
+build_api :
+	@docker build -t eu.gcr.io/${PROJECT_ID}/artrecognition-api -f Dockerfile_API .
+	#@gcloud docker -- push eu.gcr.io/$(PROJECT_ID)/artrecognition-api
 
-deploy_api : 
-	@gcloud run deploy --image eu.gcr.io/$(PROJECT_ID)/artrecognition-api --platform managed --cpu 4 --memory 16Gi --region "europe-west1" --port 8080
+docker_api_locally:
+	@docker run -e PORT=8000 -p 8000:8000 eu.gcr.io/${PROJECT_ID}/artrecognition-api
 
+
+deploy_api :
+	@docker push eu.gcr.io/${PROJECT_ID}/artrecognition-api
+	@gcloud run deploy --image eu.gcr.io/${PROJECT_ID}/artrecognition-api --platform managed --cpu 4 --memory 8Gi --region "europe-west1" --port 8000
 
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
