@@ -76,14 +76,21 @@ def extract_picture(pred_label,metadb):
     for i in pred_label[0]:
         df = metadb[metadb['labels'] == i]
         pics_list.append(list(df['pics'])[0])
-    return pics_list[0]
+    return pics_list[0], pics_list[1], pics_list[2]
+
+def extract_real_artist(pred_label,metadb):
+    picture, picture_2, picture_3 = extract_picture(pred_label,metadb)
+    df = metadb[metadb['new_filename'] == picture]
+    real_artist = list(df['artist_number'])[0]
+    print(real_artist)
+    return real_artist
 
 def extract_title(pred_label,metadb):
     names_list = []
     for i in pred_label[0]:
         df = metadb[metadb['labels'] == i]
         names_list.append(list(df['title'])[0])
-    return names_list[0]
+    return names_list[0], names_list[1], names_list[2]
 
 
 # def read_imagefile(file) -> Image.Image:
@@ -167,13 +174,15 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
     dist, pred_label = model_knn.kneighbors(image_embeddings.reshape(1,-1),n_neighbors=3,return_distance=True)
 
-    picture = extract_picture(pred_label,cache_metadata["metadata"])
+    picture, picture_2, picture_3 = extract_picture(pred_label,cache_metadata["metadata"])
 
-    name = extract_title(pred_label,cache_metadata["metadata"])
+    name, name_2, name_3 = extract_title(pred_label,cache_metadata["metadata"])
+
+    real_artist = extract_real_artist(pred_label,cache_metadata["metadata"])
 
 
 
-    response_payload = {"artist_index":artist_index, "artist_prediction" : artist_name,"picture_number":picture,'picture_name':name}
+    response_payload = {"artist_index":artist_index, "artist_prediction" : artist_name,"url_artist_index":real_artist,"picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3,'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}
     #response_payload = {"prediction" : picture}
     '''
     Delete temp image
@@ -181,9 +190,5 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     if os.path.exists(temp_image):
         os.remove(temp_image)
 
-    '''
-    Delete temp image
-    '''
-    if os.path.exists(temp_image):
-        os.remove(temp_image)
+
     return response_payload
