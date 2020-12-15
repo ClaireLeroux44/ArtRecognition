@@ -1,0 +1,23 @@
+FROM python:3.7-slim-buster
+
+RUN mkdir /api 
+
+# Copy code
+COPY api/. /api 
+
+# Copy model 
+WORKDIR /api 
+RUN mkdir models
+COPY models/. models
+
+# Copy metadatabase 
+WORKDIR /api 
+RUN mkdir -p ArtRecognition/data
+COPY ArtRecognition/data/database.csv ArtRecognition/data
+
+# Install requirements 
+RUN pip install -r /api/requirements.txt
+
+EXPOSE 8080
+
+CMD uvicorn fast:app --host "0.0.0.0" --port 8080

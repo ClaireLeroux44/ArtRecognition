@@ -47,23 +47,27 @@ count_lines:
 	'{printf "%4s %s\n", $$1, $$2}{s+=$$0}END{print s}'
 	@echo ''
 
-# ----------------------------------
-#      UPLOAD PACKAGE TO PYPI
-# ----------------------------------
-build:
-	@python setup.py sdist bdist_wheel
 
-pypi_test:
-	@twine upload -r testpypi dist/* -u lologibus2
+# ---------------------------------------
+# - API -
+# ---------------------------------------
 
-pypi:
-	@twine upload dist/* -u lologibus2
-
+#### LOCAL
 run_api:
 	@uvicorn api.fast:app --host "0.0.0.0" --port 8000 --reload
 
 run_api_test:
 	@uvicorn api.fast_test:app --host "0.0.0.0" --port 8000 --reload
+
+#### BUILD AND DEPLOY 
+PROJECT_ID=artrecognition
+build_api : 
+	@docker build -t eu.gcr.io/$(PROJECT_ID)/artrecognition-api -f Dockerfile_API . 
+	@gcloud docker -- push eu.gcr.io/$(PROJECT_ID)/artrecognition-api
+
+deploy_api : 
+	@gcloud run deploy --image eu.gcr.io/$(PROJECT_ID)/artrecognition-api --platform managed --cpu 4 --memory 16Gi --region "europe-west1" --port 8080
+
 
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
