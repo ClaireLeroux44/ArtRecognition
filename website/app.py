@@ -7,7 +7,7 @@ import os
 import time
 import urllib.request, io
 
-st.image('logo.png')
+st.image('LOGO Bandeau.png')
 st.markdown("<h1 style='text-align: center; color: #112347;'>Art Recognition Website</h1>", unsafe_allow_html=True)
 
 
@@ -54,7 +54,7 @@ if uploaded_file is not None:
 
         st.markdown("<h3 style='text-align: left; color: #112347;'>Prediction of the Artist's Name:</h3>", unsafe_allow_html=True)
         st.image(image,width=224)
-        artist_name = response.json()["artist_prediction"]
+        artist_name = response.json()[0]['artist_prediction']['artist_index']
 
         st.write("<h4 style='text-align: left; color: #112347;'>"+artist_name+"</h4>", unsafe_allow_html=True)
 
@@ -64,11 +64,10 @@ if uploaded_file is not None:
         #st.markdown(response.json()["picture_number"])
         #st.markdown(response.json()["artist_index"])
 
-        repo= response.json()["url_artist_index"]
+        repo= response.json()["url_artists"]["url_artist_index"]
         filename = response.json()["picture_number"]
 
 
-        #st.markdown(filename)
 
         URL = f"https://storage.googleapis.com/art-recognition-database/{repo}/{filename}"
 

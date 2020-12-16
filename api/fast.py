@@ -82,8 +82,23 @@ def extract_real_artist(pred_label,metadb):
     picture, picture_2, picture_3 = extract_picture(pred_label,metadb)
     df = metadb[metadb['new_filename'] == picture]
     real_artist = list(df['artist_number'])[0]
-    print(real_artist)
-    return real_artist
+    df_2 = metadb[metadb['new_filename'] == picture_2]
+    real_artist_2 = list(df_2['artist_number'])[0]
+    df_3 = metadb[metadb['new_filename'] == picture_3]
+    real_artist_3 = list(df_3['artist_number'])[0]
+    return real_artist, real_artist_2, real_artist_3
+
+def extract_real_artist_name(pred_label,metadb):
+    picture, picture_2, picture_3 = extract_picture(pred_label,metadb)
+    df = metadb[metadb['new_filename'] == picture]
+    real_artist_name = list(df['artist'])[0]
+    df_2 = metadb[metadb['new_filename'] == picture_2]
+    real_artist_name_2 = list(df_2['artist'])[0]
+    df_3 = metadb[metadb['new_filename'] == picture_3]
+    real_artist_name_3 = list(df_3['artist'])[0]
+    return real_artist_name, real_artist_name_2, real_artist_name_3
+
+
 
 def extract_title(pred_label,metadb):
     names_list = []
@@ -178,11 +193,17 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
     name, name_2, name_3 = extract_title(pred_label,cache_metadata["metadata"])
 
-    real_artist = extract_real_artist(pred_label,cache_metadata["metadata"])
+    real_artist, real_artist_2, real_artist_3 = extract_real_artist(pred_label,cache_metadata["metadata"])
+
+    real_artist_name, real_artist_name_2, real_artist_name_3 = extract_real_artist_name(pred_label,cache_metadata["metadata"])
 
 
 
-    response_payload = {"artist_index":artist_index, "artist_prediction" : artist_name,"url_artist_index":real_artist,"picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3,'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}
+    response_payload = {"artist_prediction":{"artist_index":artist_index, "artist_name" : artist_name}},\
+    {"url_artists":{"url_artist_index":real_artist,"url_artist_index_2":real_artist_2,"url_artist_index_3":real_artist_3}},\
+    {"url_artist_names":{"url_artist_name":real_artist_name,"url_artist_name_2":real_artist_name_2,"url_artist_name_3":real_artist_name_3}},\
+    {"pictures_predictions":{"picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3}},\
+    {"pictures_names":{'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}}
     #response_payload = {"prediction" : picture}
     '''
     Delete temp image
