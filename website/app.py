@@ -7,13 +7,27 @@ import os
 import time
 import urllib.request, io
 
-st.image('LOGO Bandeau.png')
+logo_html="<img src='logo.png' />"
+#st.markdown(logo_html, unsafe_allow_html=True)
+st.image('logo.png')
 
 from streamlit_cropper import st_cropper
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-st.image('logo.png')
-st.markdown("<h1 style='text-align: center; color: #112347;'>Art Recognition Website</h1>", unsafe_allow_html=True)
+#st.image('logo.png')
+#st.markdown("<h1 style='text-align: center; color: #112347;'>Art Recognition Website</h1>", unsafe_allow_html=True)
+
+def get_google_string(txt):
+    txt = txt.lstrip()
+    txt = txt.rstrip()
+    txt = txt.replace(' ','+')
+    return txt
+
+def get_wikiart_artist_string_page(artist):
+    txt = artist.lstrip()
+    txt = txt.rstrip()
+    txt = txt.replace(' ','-')
+    return txt
 
 def get_gcp_image_url(filename, directory):
     url = f"https://storage.googleapis.com/art-recognition-database/{directory}/{filename}"
@@ -35,7 +49,7 @@ if uploaded_file is not None:
     #image = Image.open(uploaded_file)
     #extension = uploaded_file.name.split(".")[-1:][0]
 
-    st.markdown("<h2 style='text-align: center; color: navy;'>Uploaded picture</h2>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: left; color: #112347;'>Uploaded picture</h2>", unsafe_allow_html=True)
 
     ############################################################
     ###############     STREAMLIT CROPED     ###################
@@ -55,19 +69,21 @@ if uploaded_file is not None:
     #                "2:3": (2,3),
     #                "Free": None}
     #aspect_ratio = aspect_dict[aspect_choice]
+    aspect_dict = {"1:1": (1,1)}
 
     if img_file:
         img = Image.open(img_file)
         if not realtime_update:
             st.write("Double click to save crop")
         # Get a cropped image from the frontend
-        cropped_img = st_cropper(img)#, realtime_update=realtime_update)#, box_color=box_color)#,
+        cropped_img = st_cropper(img, box_color='#FF0000', aspect_ratio=None)#, realtime_update=realtime_update)#, box_color=box_color)#,
         #                            aspect_ratio=aspect_ratio)
 
         # Manipulate cropped image at will
-        st.write("Preview")
-        _ = cropped_img.thumbnail((150,150))
-        st.image(cropped_img)
+        # affichage de la preview
+        #st.write("Preview")
+        #_ = cropped_img.thumbnail((150,150))
+        #st.image(cropped_img)
 
     ############################################################
     ############################################################
@@ -89,7 +105,7 @@ if uploaded_file is not None:
     #image.save(temp_image)
 
     temp_image = str(int(time.time())) + "_" + 'cropped_img.jpg'
-    print(temp_image)
+    #print(temp_image)
     #image.save(temp_image)
     cropped_img.save(temp_image)
 
@@ -109,31 +125,31 @@ if uploaded_file is not None:
     if response_code == 200 :
 
 
-        print(response)
+        #print(response)
         #if response.json() is not None:
 
         st.markdown("<h3 style='text-align: left; color: #112347;'>Prediction of the Artist's Name:</h3>", unsafe_allow_html=True)
-        st.image(image,width=224)
-        artist_name = response.json()[0]['artist_prediction']['artist_index']
+        #st.image(image,width=224)
+        artist_name = response.json()['artist_name']
 
-        st.write("<h4 style='text-align: left; color: #112347;'>"+artist_name+"</h4>", unsafe_allow_html=True)
+        st.write("<p style='text-align: left; color: #112347;'>"+artist_name+"</p>", unsafe_allow_html=True)
 
-        st.markdown(response.json())
+        #st.markdown(response.json())
         predicted_directory = response.json()["artist_index"]
         filename = response.json()["picture_number"]
         directory = response.json()['url_artist_index']
 
 
-        artist_name_prediction = response.json()["artist_prediction"]
+        artist_name_prediction = response.json()["artist_name"]
         picture_name_prediction = response.json()["picture_name"]
 
-        st.markdown("<h2 style='text-align: center; color: navy;'>Identified picture</h2>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: left; color: #112347;'>Identified picture</h2>", unsafe_allow_html=True)
 
-        st.markdown(f"<h3><b><i>'{picture_name_prediction}'</i> by {artist_name_prediction}</b><h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: left; color: #112347;'><i>'{picture_name_prediction}'</i> by {artist_name_prediction}</p>", unsafe_allow_html=True)
         #st.markdown(response.json()["picture_number"])
         #st.markdown(response.json()["artist_index"])
 
-        repo= response.json()["url_artists"]["url_artist_index"]
+        repo= response.json()["url_artist_index"]
         filename = response.json()["picture_number"]
 
 
@@ -155,37 +171,34 @@ if uploaded_file is not None:
             img_pred = Image.open(temp_pred)
             st.image(img_pred,width=224)
 
+            artist_name_by_filename = response.json()["url_artist_name"]
+            google_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + "+expostion"
+            wikiart_link = "https://www.wikiart.org/fr/" + get_wikiart_artist_string_page(artist_name_by_filename)
+            st.markdown(f"<p style='text-align: left; color: #112347;'>Links proposal : <a href='{google_link}' target='_blank'> Google Search</a> | <a href='{wikiart_link}' target='_blank'>WikiArt</a></p>", unsafe_allow_html=True)
+
 
             # Ajout des images proches
-            st.markdown("<h2 style='text-align: center; color: navy;'>Suggested others pictures</h2>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: left; color: #112347;'>Suggested others pictures</h2>", unsafe_allow_html=True)
 
             #{'artist_index': '_5', 'artist_prediction': 'Ivan Aivazovsky', 'url_artist_index': '_5', 'picture_number': '37337.jpg',
 
-            directory2 = "_5"
-            directory3 = "_5"
+            directory2 = response.json()["url_artist_index_2"]
+            directory3 = response.json()["url_artist_index_3"]
 
             picture_2_url = get_gcp_image_url(response.json()["picture_number_2"], directory2)
             picture_3_url = get_gcp_image_url(response.json()["picture_number_3"], directory3)
 
-            picture_2_name = ''
-            picture_2_name = ''
+            picture_2_name = response.json()["url_artist_index_2"]
+            picture_2_name = response.json()["url_artist_index_2"]
 
-            picture_2_artist_name = ''
-            picture_3_artist_name = ''
+            picture_2_artist_name = response.json()["url_artist_name_2"]
+            picture_3_artist_name = response.json()["url_artist_name_3"]
 
+            picture_2_title = response.json()["picture_name_2"]
+            picture_3_title = response.json()["picture_name_3"]
 
-            #'picture_number_2': '87.jpg', 'picture_number_3': '98429.jpg',
-            #'picture_name': 'Sheepdip', 'picture_name_2': 'View of Constantinople', 'picture_name_3': 'Smolny Convent'}
-
-
-            #
-
-            #st.image()
-                #st.write(print_image_HTML_from_JSON(response.json()))
-
-            # ----------------------------------------------------------
-            # Return Image
-            # ----------------------------------------------------------
+            similaires_html=f"<div id='simi' align='left'><i>{picture_2_artist_name}<img width='224' height='224' src='{picture_2_url}' title='Name of the work : {picture_2_title}' /><i>{picture_3_artist_name}<img width='224' height='224' src='{picture_3_url}' title='Name of the work : {picture_3_title}' /></div>"
+            st.markdown(similaires_html, unsafe_allow_html=True)
 
             # ----------------------------------------------------------
             # Delete temp file
