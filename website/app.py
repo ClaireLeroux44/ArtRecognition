@@ -28,6 +28,7 @@ def get_google_string(txt):
 def get_wikiart_artist_string_page(artist):
     txt = artist.lstrip()
     txt = txt.rstrip()
+    txt = txt.lower()
     txt = txt.replace(' ','-')
     return txt
 
@@ -142,7 +143,7 @@ if uploaded_file is not None:
         directory = response.json()['url_artist_index']
 
 
-        artist_name_prediction = response.json()["artist_name"]
+        artist_name_prediction = response.json()["url_artist_name"]
         picture_name_prediction = response.json()["picture_name"]
 
         st.markdown("<h3 style='text-align: left; color: #112347;'>Identified picture</h2>", unsafe_allow_html=True)
@@ -175,9 +176,13 @@ if uploaded_file is not None:
 
             artist_name_by_filename = response.json()["url_artist_name"]
             picture_name_by_filename = response.json()["picture_name"]
-            google_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + '+' + get_google_string(picture_name_by_filename) + "+exposition"
+
+
+            # Les liens
+            google_picture_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + '+' + get_google_string(picture_name_by_filename)
+            google_exposition_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + "+exposition"
             wikiart_link = "https://www.wikiart.org/fr/" + get_wikiart_artist_string_page(artist_name_by_filename)
-            st.markdown(f"<p style='text-align: left; color: #112347;'>Links proposal : <a href='{google_link}' target='_blank'> Google Search</a> | <a href='{wikiart_link}' target='_blank'>WikiArt</a></p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align: left; color: #112347;'>Links proposal : <a href='{google_picture_link}' target='_blank'>Google picture search</a>  | <a href='{google_exposition_link}' target='_blank'> Artist exhibit</a> | <a href='{wikiart_link}' target='_blank'>WikiArt Artist Page</a></p>", unsafe_allow_html=True)
 
 
             # Ajout des images proches
@@ -200,7 +205,7 @@ if uploaded_file is not None:
             picture_2_title = response.json()["picture_name_2"]
             picture_3_title = response.json()["picture_name_3"]
 
-            similaires_html=f"<div id='simi' style='float:left;vertical align : top;display:inline-block;display:table-cell;'><div id='block_img2'><div style='align:center;text:bold'><i>{picture_2_artist_name}</i></div><div><img width='224' height='224' src='{picture_2_url}' title='Name of the work : {picture_2_title}' /></div></div><div  id='block_img3'><div style='valign:top'><i>{picture_3_artist_name}</i></div><div><img width='224' height='224' src='{picture_3_url}' title='Name of the work : {picture_3_title}' /></div></div></div>"
+            similaires_html=f"<table style='border-width: 0px solid white'><tr style='border-width: 0px solid white'><td style='border-width: 0px solid white'><i>{picture_2_artist_name}</i><br/><img width='224' height='224' src='{picture_2_url}' title='Name of the work : {picture_2_title}' /></td><td style='border-width: 0px solid white'><i>{picture_3_artist_name}</i><br/><img width='224' height='224' src='{picture_3_url}' title='Name of the work : {picture_3_title}' /></td></tr></table>"
             st.markdown(similaires_html, unsafe_allow_html=True)
 
             # ----------------------------------------------------------
