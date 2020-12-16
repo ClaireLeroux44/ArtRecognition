@@ -199,12 +199,16 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
 
 
-    response_payload = {"artist_prediction":{"artist_index":artist_index, "artist_name" : artist_name}},\
-    {"url_artists":{"url_artist_index":real_artist,"url_artist_index_2":real_artist_2,"url_artist_index_3":real_artist_3}},\
-    {"url_artist_names":{"url_artist_name":real_artist_name,"url_artist_name_2":real_artist_name_2,"url_artist_name_3":real_artist_name_3}},\
-    {"pictures_predictions":{"picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3}},\
-    {"pictures_names":{'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}}
-    #response_payload = {"prediction" : picture}
+    # response_payload = {"artist_prediction":{"artist_index":artist_index, "artist_name" : artist_name}},\
+    # {"url_artists":{"url_artist_index":real_artist,"url_artist_index_2":real_artist_2,"url_artist_index_3":real_artist_3}},\
+    # {"url_artist_names":{"url_artist_name":real_artist_name,"url_artist_name_2":real_artist_name_2,"url_artist_name_3":real_artist_name_3}},\
+    # {"pictures_predictions":{"picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3}},\
+    # {"pictures_names":{'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}}
+    response_payload = {"artist_index":artist_index, "artist_name" : artist_name,"url_artist_index":real_artist,\
+    "url_artist_index_2":real_artist_2,"url_artist_index_3":real_artist_3,"url_artist_name":real_artist_name,\
+    "url_artist_name_2":real_artist_name_2,"url_artist_name_3":real_artist_name_3,\
+    "picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3,\
+    'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}
     '''
     Delete temp image
     '''
