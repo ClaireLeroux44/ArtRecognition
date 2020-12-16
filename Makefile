@@ -62,16 +62,16 @@ run_api_test:
 #### BUILD AND DEPLOY
 PROJECT_ID=artrecognition
 build_api :
-	@docker build -t eu.gcr.io/${PROJECT_ID}/artrecognition-api -f Dockerfile_API .
+	@docker build -t eu.gcr.io/${PROJECT_ID}/artrecognition-api_1 -f Dockerfile_API .
 	#@gcloud docker -- push eu.gcr.io/$(PROJECT_ID)/artrecognition-api
 
 docker_api_locally:
-	@docker run -e PORT=8000 -p 8000:8000 eu.gcr.io/${PROJECT_ID}/artrecognition-api
+	@docker run -e PORT=8000 -p 8000:8000 eu.gcr.io/${PROJECT_ID}/artrecognition-api_1
 
 
 deploy_api :
-	@docker push eu.gcr.io/${PROJECT_ID}/artrecognition-api
-	@gcloud run deploy --image eu.gcr.io/${PROJECT_ID}/artrecognition-api --platform managed --cpu 4 --memory 8Gi --region "europe-west1" --port 8000
+	@docker push eu.gcr.io/${PROJECT_ID}/artrecognition-api_1
+	@gcloud run deploy --image eu.gcr.io/${PROJECT_ID}/artrecognition-api_1 --platform managed --cpu 4 --memory 8Gi --region "europe-west1" --port 8000
 
 ##### Google Storage params
 BUCKET_NAME=art-recognition-app
