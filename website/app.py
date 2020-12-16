@@ -9,6 +9,8 @@ import urllib.request, io
 
 logo_html="<img src='logo.png' />"
 #st.markdown(logo_html, unsafe_allow_html=True)
+#st.title('API - Artists and Paintings Identifier')
+
 st.image('logo.png')
 
 from streamlit_cropper import st_cropper
@@ -172,7 +174,8 @@ if uploaded_file is not None:
             st.image(img_pred,width=224)
 
             artist_name_by_filename = response.json()["url_artist_name"]
-            google_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + "+expostion"
+            picture_name_by_filename = response.json()["picture_name"]
+            google_link = "https://www.google.fr/search?q=" + get_google_string(artist_name_by_filename) + '+' + get_google_string(picture_name_by_filename) + "+exposition"
             wikiart_link = "https://www.wikiart.org/fr/" + get_wikiart_artist_string_page(artist_name_by_filename)
             st.markdown(f"<p style='text-align: left; color: #112347;'>Links proposal : <a href='{google_link}' target='_blank'> Google Search</a> | <a href='{wikiart_link}' target='_blank'>WikiArt</a></p>", unsafe_allow_html=True)
 
@@ -197,7 +200,7 @@ if uploaded_file is not None:
             picture_2_title = response.json()["picture_name_2"]
             picture_3_title = response.json()["picture_name_3"]
 
-            similaires_html=f"<div id='simi' align='left'><i>{picture_2_artist_name}<img width='224' height='224' src='{picture_2_url}' title='Name of the work : {picture_2_title}' /><i>{picture_3_artist_name}<img width='224' height='224' src='{picture_3_url}' title='Name of the work : {picture_3_title}' /></div>"
+            similaires_html=f"<div id='simi' style='float:left;vertical align : top;display:inline-block;display:table-cell;'><div id='block_img2'><div style='align:center;text:bold'><i>{picture_2_artist_name}</i></div><div><img width='224' height='224' src='{picture_2_url}' title='Name of the work : {picture_2_title}' /></div></div><div  id='block_img3'><div style='valign:top'><i>{picture_3_artist_name}</i></div><div><img width='224' height='224' src='{picture_3_url}' title='Name of the work : {picture_3_title}' /></div></div></div>"
             st.markdown(similaires_html, unsafe_allow_html=True)
 
             # ----------------------------------------------------------
