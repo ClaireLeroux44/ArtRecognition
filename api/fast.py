@@ -73,10 +73,16 @@ def extract_artist(artiste_index, metadb):
 
 def extract_picture(pred_label,metadb):
     pics_list = []
-    for i in pred_label[0]:
+    for i in pred_label:
         df = metadb[metadb['labels'] == i]
-        pics_list.append(list(df['pics'])[0])
+        pics_list.append(df['pics'].values[0])
     return pics_list[0], pics_list[1], pics_list[2]
+
+def extract_distance(dist,metadb):
+    dist_list = []
+    for i in dist[0]:
+        dist_list.append(i)
+    return dist_list[0], dist_list[1], dist_list[2]
 
 def extract_real_artist(pred_label,metadb):
     picture, picture_2, picture_3 = extract_picture(pred_label,metadb)
@@ -102,7 +108,7 @@ def extract_real_artist_name(pred_label,metadb):
 
 def extract_title(pred_label,metadb):
     names_list = []
-    for i in pred_label[0]:
+    for i in pred_label:
         df = metadb[metadb['labels'] == i]
         names_list.append(list(df['title'])[0])
     return names_list[0], names_list[1], names_list[2]
@@ -123,13 +129,19 @@ def extract_title(pred_label,metadb):
 async def startup_event():
     print("loading model artist... ")
     dirname = os.path.dirname(os.path.dirname(__file__))
-    model_path = os.path.join(dirname,'models','model_v5')
+    model_path = os.path.join(dirname,'models','20201212_205911_VGG16_v3_27')
     model_artist = load_model(model_path)
     cache_models["model_1"] = model_artist
 
+    print("loading model painting... ")
+    dirname = os.path.dirname(os.path.dirname(__file__))
+    painting_path = os.path.join(dirname,'models','20201214_150118_VGG16_v4_31')
+    model_painting = load_model(painting_path)
+    cache_models["model_3"] = model_painting
+
     print("loading model knn... ")
     dirname = os.path.dirname(os.path.dirname(__file__))
-    knn_path = os.path.join(dirname,'models','KNN_models','model2.joblib')
+    knn_path = os.path.join(dirname,'models','KNN_models','KNN_model_20201214_150118_VGG16_v4_31_Top_12.joblib')
     model_knn = joblib.load(knn_path)
     cache_models["model_2"] = model_knn
 
@@ -172,15 +184,18 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
 
     #prediction artiste
     model_artist = cache_models["model_1"]
+    print(model_artist)
     pred = model_artist.predict(img)
     artiste_index = np.argmax(pred[0])
 
     artist_index, artist_name = extract_artist(artiste_index, cache_metadata["metadata"])
 
     #prediction toile
-    img_knn = read_image_knn(temp_image)
-    layer_outputs = [model_artist.layers[-1].input]
-    embedding_model = models.Model(inputs=model_artist.input, outputs=layer_outputs)
+    model_painting =cache_models["model_3"]
+    print(model_painting)
+    img_knn = read_imagefile(temp_image)
+    layer_outputs = [model_painting.layers[-1].input]
+    embedding_model = models.Model(inputs=model_painting.input, outputs=layer_outputs)
 
     image_embeddings = embedding_model.predict(img_knn)
 
@@ -188,10 +203,13 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     print(model_knn)
 
     dist, pred_label = model_knn.kneighbors(image_embeddings.reshape(1,-1),n_neighbors=3,return_distance=True)
+    pred_label = list(pred_label[0])
 
     picture, picture_2, picture_3 = extract_picture(pred_label,cache_metadata["metadata"])
 
     name, name_2, name_3 = extract_title(pred_label,cache_metadata["metadata"])
+
+    dist, dist_2, dist_3 = extract_distance(dist,cache_metadata["metadata"])
 
     real_artist, real_artist_2, real_artist_3 = extract_real_artist(pred_label,cache_metadata["metadata"])
 
@@ -208,7 +226,8 @@ async def predict_handler(response : Response, inputImage : UploadFile = File(..
     "url_artist_index_2":real_artist_2,"url_artist_index_3":real_artist_3,"url_artist_name":real_artist_name,\
     "url_artist_name_2":real_artist_name_2,"url_artist_name_3":real_artist_name_3,\
     "picture_number":picture,"picture_number_2":picture_2,"picture_number_3":picture_3,\
-    'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3}
+    'picture_name':name,'picture_name_2':name_2,'picture_name_3':name_3,\
+    'distance':dist,'distance_2':dist_2,'distance_3':dist_3}
     '''
     Delete temp image
     '''
